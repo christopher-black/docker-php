@@ -1,0 +1,32 @@
+# snowfall is the app name
+version: '3.8'
+services:
+  database:
+    # Install postgres on our docker image
+    image: postgres
+    # Give our container a unique name
+    container_name: snowfall-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: snowfall
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    # Map 5433 on our computer to 5432 in docker
+    # 5432 on our computer is already running postgres.
+    ports:
+      - '5433:5432'
+  php-apache:
+    # Give our container a unique name
+    container_name: snowfall-php
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    # Port for our PHP server maps to port 80 on docker
+    ports:
+        - '8000:80'
+    volumes:
+      - ./php/src:/var/www/html/
+      - ./php/config/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+    depends_on:
+      - database
